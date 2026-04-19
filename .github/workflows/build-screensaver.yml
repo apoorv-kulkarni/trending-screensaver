@@ -1,0 +1,27 @@
+name: Build screensaver
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "screensaver/**"
+      - "web/**"
+      - ".github/workflows/build-screensaver.yml"
+  pull_request:
+    paths:
+      - "screensaver/**"
+      - "web/**"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build .saver bundle
+        working-directory: screensaver
+        run: make
+      - name: Verify binary
+        run: file screensaver/build/TrendsScreensaver.saver/Contents/MacOS/TrendsScreensaver
