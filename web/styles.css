@@ -1,0 +1,78 @@
+:root {
+  --bg: #0a0a0a;
+  --hero: #f5f1e8;
+  --ghost: rgba(245, 241, 232, 0.18);
+  --ghost-faint: rgba(245, 241, 232, 0.10);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: "SF Pro Rounded", "SF Pro Display", -apple-system, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { position: relative; }
+
+.word {
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+
+@keyframes drift-ltr {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100vw); }
+}
+
+@keyframes drift-rtl {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
+.hero {
+  top: 38%;
+  font-size: clamp(3rem, 11vmin, 11rem);
+  color: var(--hero);
+  animation: drift-rtl 32s linear infinite;
+}
+
+.ghost-1 {
+  top: 62%;
+  font-size: clamp(2.5rem, 9vmin, 9rem);
+  color: var(--ghost);
+  animation: drift-ltr 40s linear infinite;
+}
+
+.ghost-2 {
+  top: 78%;
+  font-size: clamp(3rem, 12vmin, 12rem);
+  color: var(--ghost);
+  animation: drift-rtl 48s linear infinite;
+}
+
+.ghost-3 {
+  top: 16%;
+  font-size: clamp(2rem, 7vmin, 7rem);
+  color: var(--ghost-faint);
+  animation: drift-ltr 36s linear infinite;
+}
+
+.source {
+  position: fixed;
+  bottom: 2vmin;
+  right: 2.5vmin;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 232, 0.35);
+  font-family: -apple-system, "SF Pro Text", sans-serif;
+}
