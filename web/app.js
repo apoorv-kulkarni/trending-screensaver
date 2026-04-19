@@ -27,14 +27,13 @@ const main = async () => {
   const trends = payload.trends.map((t) => lower(t.title));
   const n = trends.length;
 
-  // Each word picks a starting trend; on every animation loop, advance to the next.
-  // Stagger starts so they don't all show the same trend at once.
+  // Shared pointer so every slot pulls from the same incrementing index —
+  // guarantees all n trends appear before any repeats, regardless of slot count.
+  let next = allWords.length;
   allWords.forEach((el, i) => {
-    let idx = i % n;
-    el.textContent = trends[idx];
+    el.textContent = trends[i % n];
     el.addEventListener("animationiteration", () => {
-      idx = (idx + allWords.length) % n;
-      el.textContent = trends[idx];
+      el.textContent = trends[next++ % n];
     });
   });
 };
