@@ -35,7 +35,7 @@ Uninstall with `make uninstall`.
 
 ## Project layout
 
-```
+```text
 fetch_trends.py            # Google Trends RSS -> web/trends.json
 web/                       # static site (deployed to Pages)
   index.html
@@ -48,6 +48,10 @@ screensaver/
   Makefile                 # build + install
 .github/workflows/pages.yml
 ```
+
+## Inspiration
+
+Inspired by the macOS "Word of the Day" screensaver — same calm, ambient-information vibe, but with what the world is searching for instead of vocabulary.
 
 ## License
 
