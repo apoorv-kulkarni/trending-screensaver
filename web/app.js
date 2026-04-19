@@ -15,7 +15,7 @@ const formatFetched = (iso) =>
 const main = async () => {
   let payload;
   try {
-    const res = await fetch(`https://apoorv-kulkarni.github.io/trending-screensaver/trends.json?t=${Date.now()}`);
+    const res = await fetch(`https://apoorvkulkarni.com/trending-screensaver/trends.json?t=${Date.now()}`);
     payload = await res.json();
   } catch (e) {
     hero.textContent = "trends unavailable";
