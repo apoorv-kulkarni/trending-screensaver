@@ -39,6 +39,17 @@ body { position: relative; }
   border-radius: 50%;
   opacity: 0.045;
   mix-blend-mode: screen;
+  transition: opacity 1s ease;
+}
+
+@keyframes caustic-pulse {
+  0%   { filter: brightness(1)   hue-rotate(0deg); }
+  40%  { filter: brightness(1.9) hue-rotate(25deg); }
+  100% { filter: brightness(1)   hue-rotate(0deg); }
+}
+
+.caustics.pulse {
+  animation: caustic-pulse 2.4s ease-out forwards;
 }
 
 .caustics::before {
@@ -87,9 +98,10 @@ body { position: relative; }
   z-index: 1;
 }
 
-/* Sine-wave swim paths */
+/* Sine-wave swim paths — opacity 0 at boundaries so text swaps are invisible */
 @keyframes swim-ltr {
-  0%   { transform: translateX(-100%) translateY(0); }
+  0%   { transform: translateX(-100%) translateY(0);       opacity: 0; }
+  8%   { opacity: 1; }
   12%  { transform: translateX(12vw)  translateY(-1.8vmin); }
   25%  { transform: translateX(25vw)  translateY(-3vmin); }
   37%  { transform: translateX(37vw)  translateY(-1.8vmin); }
@@ -97,11 +109,13 @@ body { position: relative; }
   62%  { transform: translateX(62vw)  translateY(1.8vmin); }
   75%  { transform: translateX(75vw)  translateY(3vmin); }
   87%  { transform: translateX(87vw)  translateY(1.8vmin); }
-  100% { transform: translateX(100vw) translateY(0); }
+  92%  { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(0);       opacity: 0; }
 }
 
 @keyframes swim-rtl {
-  0%   { transform: translateX(100vw) translateY(0); }
+  0%   { transform: translateX(100vw) translateY(0);       opacity: 0; }
+  8%   { opacity: 1; }
   12%  { transform: translateX(88vw)  translateY(1.8vmin); }
   25%  { transform: translateX(75vw)  translateY(3vmin); }
   37%  { transform: translateX(63vw)  translateY(1.8vmin); }
@@ -109,7 +123,8 @@ body { position: relative; }
   62%  { transform: translateX(38vw)  translateY(-1.8vmin); }
   75%  { transform: translateX(25vw)  translateY(-3vmin); }
   87%  { transform: translateX(13vw)  translateY(-1.8vmin); }
-  100% { transform: translateX(-100%) translateY(0); }
+  92%  { opacity: 1; }
+  100% { transform: translateX(-100%) translateY(0);       opacity: 0; }
 }
 
 /* ghost-1: closest — sharpest, most opaque */
@@ -245,6 +260,7 @@ a.hero:hover { text-decoration: underline; }
   object-fit: cover;
   background: rgba(100, 200, 255, 0.06);
   flex-shrink: 0;
+  filter: saturate(0.8) brightness(0.92);
 }
 
 .thumb.empty { display: none; }
@@ -276,6 +292,15 @@ a.headline:hover { text-decoration: underline; }
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--source-txt);
+  font-family: -apple-system, "SF Pro Text", sans-serif;
+}
+
+.traffic {
+  margin-top: 0.5vmin;
+  font-size: clamp(0.55rem, 1vmin, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(120, 190, 230, 0.3);
   font-family: -apple-system, "SF Pro Text", sans-serif;
 }
 
