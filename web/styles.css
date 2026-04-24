@@ -19,7 +19,7 @@ html, body {
 
 body { position: relative; }
 
-/* --- ambient ghost words --- */
+/* --- ambient ghost words (depth-layered) --- */
 
 .word {
   position: absolute;
@@ -42,25 +42,34 @@ body { position: relative; }
   to   { transform: translateX(-100%); }
 }
 
+/* ghost-1: closest plane — sharpest, largest, most visible */
 .ghost-1 {
   top: 62%;
   font-size: clamp(2.5rem, 9vmin, 9rem);
   color: var(--ghost);
   animation: drift-ltr 40s linear infinite;
+  filter: blur(0.4px);
+  transform-origin: left center;
 }
 
+/* ghost-2: mid plane */
 .ghost-2 {
   top: 78%;
   font-size: clamp(3rem, 12vmin, 12rem);
-  color: var(--ghost);
+  color: rgba(245, 241, 232, 0.13);
   animation: drift-rtl 48s linear infinite;
+  filter: blur(1.2px);
+  transform-origin: left center;
 }
 
+/* ghost-3: furthest plane — faintest, most blurred */
 .ghost-3 {
   top: 16%;
   font-size: clamp(2rem, 7vmin, 7rem);
   color: var(--ghost-faint);
   animation: drift-ltr 36s linear infinite;
+  filter: blur(2px);
+  transform-origin: left center;
 }
 
 /* --- focused trend (hero + card) --- */
@@ -90,6 +99,28 @@ body { position: relative; }
   transform: translate(-50%, -50%) scale(1);
 }
 
+/* Drift directions use viewport units so the element always exits the screen. */
+.focus.drift-left {
+  transition: opacity 4s ease, transform 4s ease;
+  opacity: 0;
+  transform: translate(calc(-50% - 110vw), -50%);
+}
+.focus.drift-right {
+  transition: opacity 4s ease, transform 4s ease;
+  opacity: 0;
+  transform: translate(calc(-50% + 110vw), -50%);
+}
+.focus.drift-up {
+  transition: opacity 4s ease, transform 4s ease;
+  opacity: 0;
+  transform: translate(-50%, calc(-50% - 110vh));
+}
+.focus.drift-down {
+  transition: opacity 4s ease, transform 4s ease;
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 110vh));
+}
+
 .hero {
   font-size: clamp(3rem, 11vmin, 11rem);
   font-weight: 700;
@@ -99,7 +130,10 @@ body { position: relative; }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 90vw;
+  text-decoration: none;
 }
+
+a.hero:hover { text-decoration: underline; }
 
 .card {
   display: flex;
@@ -113,9 +147,13 @@ body { position: relative; }
   max-width: 80vw;
 }
 
-.focus.with-card .card {
-  opacity: 1;
-  transform: translateY(0);
+.focus.with-card .card { opacity: 1; transform: translateY(0); }
+
+/* Instant reset — no flash during cycle transition */
+.focus.resetting .card {
+  transition: none;
+  opacity: 0;
+  transform: translateY(1vmin);
 }
 
 .thumb {
@@ -145,7 +183,10 @@ body { position: relative; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-decoration: none;
 }
+
+a.headline:hover { text-decoration: underline; }
 
 .news-source {
   margin-top: 1vmin;
@@ -154,29 +195,6 @@ body { position: relative; }
   text-transform: uppercase;
   color: var(--news-source);
   font-family: -apple-system, "SF Pro Text", sans-serif;
-}
-
-/* drift-away: translate + fade. JS picks one direction per cycle. */
-
-.focus.drift-left {
-  transition: opacity 4s ease, transform 4s ease;
-  opacity: 0;
-  transform: translate(-160%, -50%) scale(1);
-}
-.focus.drift-right {
-  transition: opacity 4s ease, transform 4s ease;
-  opacity: 0;
-  transform: translate(60%, -50%) scale(1);
-}
-.focus.drift-up {
-  transition: opacity 4s ease, transform 4s ease;
-  opacity: 0;
-  transform: translate(-50%, -160%) scale(1);
-}
-.focus.drift-down {
-  transition: opacity 4s ease, transform 4s ease;
-  opacity: 0;
-  transform: translate(-50%, 60%) scale(1);
 }
 
 /* --- footer attribution --- */

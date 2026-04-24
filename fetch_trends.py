@@ -26,16 +26,20 @@ def parse(xml_bytes: bytes) -> list[dict]:
         title = (item.findtext("title") or "").strip()
         if not title:
             continue
+        link = (item.findtext("link") or "").strip()
         traffic = (item.findtext("ht:approx_traffic", namespaces=NS) or "").strip()
         picture = (item.findtext("ht:picture", namespaces=NS) or "").strip()
         news_title = (item.findtext("ht:news_item/ht:news_item_title", namespaces=NS) or "").strip()
         news_source = (item.findtext("ht:news_item/ht:news_item_source", namespaces=NS) or "").strip()
+        news_url = (item.findtext("ht:news_item/ht:news_item_url", namespaces=NS) or "").strip()
         trends.append({
             "title": title,
+            "link": link,
             "traffic": traffic,
             "picture": picture,
             "headline": news_title,
             "source": news_source,
+            "url": news_url,
         })
     return trends
 

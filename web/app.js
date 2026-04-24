@@ -2,6 +2,7 @@ const TRENDS_URL = "https://apoorvkulkarni.com/trending-screensaver/trends.json"
 
 const focus = document.getElementById("focus");
 const hero = document.getElementById("hero");
+const card = document.getElementById("card");
 const thumb = document.getElementById("thumb");
 const headline = document.getElementById("headline");
 const newsSource = document.getElementById("newsSource");
@@ -31,25 +32,35 @@ const setThumb = (url) => {
   }
 };
 
+// Enable pointer events on the web view only (screensavers block interaction).
+const isScreensaver = window.location.protocol === "file:";
+if (!isScreensaver) {
+  focus.style.pointerEvents = "auto";
+}
+
 const showTrend = async (trend) => {
   hero.textContent = lower(trend.title);
+  hero.href = trend.link || "#";
   setThumb(trend.picture);
   headline.textContent = trend.headline || "";
+  headline.href = trend.url || trend.link || "#";
   newsSource.textContent = trend.source || "";
 
-  // Reset to hidden, off-state.
+  // Instantly snap card to hidden with no transition, preventing flash on reset.
+  focus.classList.add("resetting");
+  focus.className = "focus resetting";
+  void focus.offsetWidth;
   focus.className = "focus";
-  // Force reflow so the next class change actually transitions.
   void focus.offsetWidth;
 
-  // Enter (1s).
+  // Enter (1s fade-in + scale).
   focus.classList.add("visible");
   await wait(1000);
 
   // Hold hero alone (3s).
   await wait(3000);
 
-  // Headline + thumbnail fade in (0.8s) and stay.
+  // Headline + thumbnail fade in (0.8s) and stay (3.2s).
   focus.classList.add("with-card");
   await wait(4000);
 
