@@ -48,10 +48,8 @@ const togglePause = () => {
 };
 
 const isScreensaver = window.location.protocol === "file:";
-if (!isScreensaver) focus.style.pointerEvents = "auto";
-
-// Spacebar or click anywhere (except links) toggles pause — web view only.
 if (!isScreensaver) {
+  focus.style.pointerEvents = "auto";
   document.addEventListener("keydown", (e) => {
     if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePause(); }
   });
