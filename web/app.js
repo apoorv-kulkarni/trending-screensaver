@@ -27,7 +27,7 @@ const formatFetched = (iso) =>
 
 const parseTraffic = (s) => {
   if (!s) return 0;
-  const m = s.match(/([\d.]+)\s*([KMB]?)/i);
+  const m = s.replace(/,/g, "").match(/([\d.]+)\s*([KMB]?)/i);
   if (!m) return 0;
   const mult = { k: 1e3, m: 1e6, b: 1e9 }[m[2].toLowerCase()] || 1;
   return parseFloat(m[1]) * mult;
