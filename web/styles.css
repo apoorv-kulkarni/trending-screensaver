@@ -1,10 +1,13 @@
 :root {
-  --bg: #0a0a0a;
-  --hero: #f5f1e8;
-  --ghost: rgba(245, 241, 232, 0.18);
-  --ghost-faint: rgba(245, 241, 232, 0.10);
-  --headline: rgba(245, 241, 232, 0.7);
-  --news-source: rgba(245, 241, 232, 0.4);
+  --bg-deep:    #04090f;
+  --bg-mid:     #071628;
+  --bg-surface: #0a2040;
+  --biolum:     #e8f6ff;
+  --ghost-near: rgba(120, 210, 255, 0.22);
+  --ghost-mid:  rgba(80, 170, 230, 0.13);
+  --ghost-far:  rgba(50, 130, 200, 0.08);
+  --headline:   rgba(210, 240, 255, 0.75);
+  --source-txt: rgba(160, 210, 240, 0.45);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,14 +15,65 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
   font-family: "SF Pro Rounded", "SF Pro Display", -apple-system, "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 body { position: relative; }
 
-/* --- ambient ghost words (depth-layered) --- */
+/* --- caustic light shimmer --- */
+
+.caustics {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.caustics::before,
+.caustics::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.045;
+  mix-blend-mode: screen;
+}
+
+.caustics::before {
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(ellipse, rgba(100, 200, 255, 0.6) 0%, transparent 70%);
+  top: -20vw;
+  left: 5vw;
+  animation: caustic-a 18s ease-in-out infinite alternate;
+}
+
+.caustics::after {
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(ellipse, rgba(60, 160, 240, 0.5) 0%, transparent 70%);
+  top: 10vw;
+  right: -10vw;
+  animation: caustic-b 23s ease-in-out infinite alternate;
+}
+
+@keyframes caustic-a {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(8vw, 5vw) scale(1.1); }
+  66%  { transform: translate(-5vw, 12vw) scale(0.92); }
+  100% { transform: translate(12vw, -4vw) scale(1.05); }
+}
+
+@keyframes caustic-b {
+  0%   { transform: translate(0, 0) scale(1); }
+  40%  { transform: translate(-10vw, 8vw) scale(1.08); }
+  80%  { transform: translate(6vw, -6vw) scale(0.95); }
+  100% { transform: translate(-4vw, 14vw) scale(1.12); }
+}
+
+/* --- ambient ghost words (depth-layered fish) --- */
 
 .word {
   position: absolute;
@@ -30,56 +84,70 @@ body { position: relative; }
   pointer-events: none;
   user-select: none;
   will-change: transform;
+  z-index: 1;
 }
 
-@keyframes drift-ltr {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100vw); }
+/* Sine-wave swim paths */
+@keyframes swim-ltr {
+  0%   { transform: translateX(-100%) translateY(0); }
+  12%  { transform: translateX(12vw)  translateY(-1.8vmin); }
+  25%  { transform: translateX(25vw)  translateY(-3vmin); }
+  37%  { transform: translateX(37vw)  translateY(-1.8vmin); }
+  50%  { transform: translateX(50vw)  translateY(0); }
+  62%  { transform: translateX(62vw)  translateY(1.8vmin); }
+  75%  { transform: translateX(75vw)  translateY(3vmin); }
+  87%  { transform: translateX(87vw)  translateY(1.8vmin); }
+  100% { transform: translateX(100vw) translateY(0); }
 }
 
-@keyframes drift-rtl {
-  from { transform: translateX(100vw); }
-  to   { transform: translateX(-100%); }
+@keyframes swim-rtl {
+  0%   { transform: translateX(100vw) translateY(0); }
+  12%  { transform: translateX(88vw)  translateY(1.8vmin); }
+  25%  { transform: translateX(75vw)  translateY(3vmin); }
+  37%  { transform: translateX(63vw)  translateY(1.8vmin); }
+  50%  { transform: translateX(50vw)  translateY(0); }
+  62%  { transform: translateX(38vw)  translateY(-1.8vmin); }
+  75%  { transform: translateX(25vw)  translateY(-3vmin); }
+  87%  { transform: translateX(13vw)  translateY(-1.8vmin); }
+  100% { transform: translateX(-100%) translateY(0); }
 }
 
-/* ghost-1: closest plane — sharpest, largest, most visible */
+/* ghost-1: closest — sharpest, most opaque */
 .ghost-1 {
   top: 62%;
   font-size: clamp(2.5rem, 9vmin, 9rem);
-  color: var(--ghost);
-  animation: drift-ltr 40s linear infinite;
-  filter: blur(0.4px);
-  transform-origin: left center;
+  color: var(--ghost-near);
+  filter: blur(0.3px);
+  animation: swim-ltr 40s linear infinite;
 }
 
-/* ghost-2: mid plane */
+/* ghost-2: mid depth */
 .ghost-2 {
   top: 78%;
   font-size: clamp(3rem, 12vmin, 12rem);
-  color: rgba(245, 241, 232, 0.13);
-  animation: drift-rtl 48s linear infinite;
-  filter: blur(1.2px);
-  transform-origin: left center;
+  color: var(--ghost-mid);
+  filter: blur(1.5px);
+  animation: swim-rtl 52s linear infinite;
 }
 
-/* ghost-3: furthest plane — faintest, most blurred */
+/* ghost-3: far depth — faintest, most blurred */
 .ghost-3 {
   top: 16%;
   font-size: clamp(2rem, 7vmin, 7rem);
-  color: var(--ghost-faint);
-  animation: drift-ltr 36s linear infinite;
-  filter: blur(2px);
-  transform-origin: left center;
+  color: var(--ghost-far);
+  filter: blur(2.8px);
+  animation: swim-ltr 36s linear infinite;
 }
 
-/* --- focused trend (hero + card) --- */
+/* --- focused trend: the fish that swims up to the glass --- */
 
 .focus {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: translate(-50%, -50%) scale(0.82);
   opacity: 0;
+  filter: blur(5px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,80 +156,97 @@ body { position: relative; }
   pointer-events: none;
   user-select: none;
   max-width: 90vw;
+  z-index: 2;
   transition:
-    opacity 1s ease,
-    transform 1s ease;
-  will-change: transform, opacity;
+    opacity 1.2s ease,
+    transform 1.2s ease,
+    filter 1.2s ease;
+  will-change: transform, opacity, filter;
 }
 
 .focus.visible {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
+  filter: blur(0px);
 }
 
-/* Drift directions use viewport units so the element always exits the screen. */
+/* Drift directions — viewport-relative so the element always exits the screen */
 .focus.drift-left {
-  transition: opacity 4s ease, transform 4s ease;
+  transition: opacity 4s ease, transform 4s ease, filter 4s ease;
   opacity: 0;
-  transform: translate(calc(-50% - 110vw), -50%);
+  filter: blur(4px);
+  transform: translate(calc(-50% - 110vw), -50%) scale(0.85);
 }
 .focus.drift-right {
-  transition: opacity 4s ease, transform 4s ease;
+  transition: opacity 4s ease, transform 4s ease, filter 4s ease;
   opacity: 0;
-  transform: translate(calc(-50% + 110vw), -50%);
+  filter: blur(4px);
+  transform: translate(calc(-50% + 110vw), -50%) scale(0.85);
 }
 .focus.drift-up {
-  transition: opacity 4s ease, transform 4s ease;
+  transition: opacity 4s ease, transform 4s ease, filter 4s ease;
   opacity: 0;
-  transform: translate(-50%, calc(-50% - 110vh));
+  filter: blur(4px);
+  transform: translate(-50%, calc(-50% - 110vh)) scale(0.85);
 }
 .focus.drift-down {
-  transition: opacity 4s ease, transform 4s ease;
+  transition: opacity 4s ease, transform 4s ease, filter 4s ease;
   opacity: 0;
-  transform: translate(-50%, calc(-50% + 110vh));
+  filter: blur(4px);
+  transform: translate(-50%, calc(-50% + 110vh)) scale(0.85);
 }
 
 .hero {
   font-size: clamp(3rem, 11vmin, 11rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--hero);
+  color: var(--biolum);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 90vw;
   text-decoration: none;
+  text-shadow:
+    0 0 40px rgba(120, 210, 255, 0.35),
+    0 0 80px rgba(80, 170, 255, 0.15);
 }
 
 a.hero:hover { text-decoration: underline; }
+
+/* --- headline card: frosted glass specimen tag --- */
 
 .card {
   display: flex;
   align-items: center;
   gap: 2.5vmin;
   opacity: 0;
-  transform: translateY(1vmin);
+  transform: translateY(1.5vmin);
+  background: rgba(4, 18, 35, 0.45);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgba(100, 200, 255, 0.12);
+  border-radius: 1.8vmin;
+  padding: 2vmin 2.8vmin;
+  max-width: 80vw;
   transition:
     opacity 0.8s ease,
     transform 0.8s ease;
-  max-width: 80vw;
 }
 
 .focus.with-card .card { opacity: 1; transform: translateY(0); }
 
-/* Instant reset — no flash during cycle transition */
 .focus.resetting .card {
   transition: none;
   opacity: 0;
-  transform: translateY(1vmin);
+  transform: translateY(1.5vmin);
 }
 
 .thumb {
   width: clamp(3.5rem, 9vmin, 9rem);
   height: clamp(3.5rem, 9vmin, 9rem);
-  border-radius: 1.2vmin;
+  border-radius: 1vmin;
   object-fit: cover;
-  background: rgba(245, 241, 232, 0.06);
+  background: rgba(100, 200, 255, 0.06);
   flex-shrink: 0;
 }
 
@@ -193,7 +278,7 @@ a.headline:hover { text-decoration: underline; }
   font-size: clamp(0.6rem, 1.1vmin, 0.85rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--news-source);
+  color: var(--source-txt);
   font-family: -apple-system, "SF Pro Text", sans-serif;
 }
 
@@ -206,6 +291,7 @@ a.headline:hover { text-decoration: underline; }
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(245, 241, 232, 0.35);
+  color: rgba(160, 210, 240, 0.4);
   font-family: -apple-system, "SF Pro Text", sans-serif;
+  z-index: 3;
 }

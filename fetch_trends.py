@@ -2,13 +2,15 @@
 """Fetch Google Trends daily trending searches and write web/trends.json."""
 
 import json
+import os
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
-FEED_URL = "https://trends.google.com/trending/rss?geo=US"
+GEO = os.environ.get("GEO", "US").upper()
+FEED_URL = f"https://trends.google.com/trending/rss?geo={GEO}"
 OUT_PATH = Path(__file__).parent / "web" / "trends.json"
 NS = {"ht": "https://trends.google.com/trending/rss"}
 
@@ -58,7 +60,7 @@ def main() -> int:
 
     payload = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "region": "US",
+        "region": GEO,
         "trends": trends,
     }
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -18,6 +18,9 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  # Change GEO to your country code (e.g. GB, AU, IN, JP) to show local trends.
+  # Override via a GitHub Actions variable named GEO in repo Settings → Secrets and variables.
+  GEO: ${{ vars.GEO || 'US' }}
 
 concurrency:
   group: pages
@@ -38,6 +41,8 @@ jobs:
 
       - name: Fetch trends
         run: python3 fetch_trends.py
+        env:
+          GEO: ${{ env.GEO }}
 
       - uses: actions/configure-pages@v5
 
