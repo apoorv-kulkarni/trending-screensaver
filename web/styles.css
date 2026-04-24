@@ -225,6 +225,9 @@ body { position: relative; }
 
 a.hero:hover { text-decoration: underline; }
 
+.hero.size-md { font-size: clamp(2.5rem, 8vmin, 8rem); }
+.hero.size-sm { font-size: clamp(1.8rem, 5.5vmin, 5.5rem); }
+
 /* --- headline card: frosted glass specimen tag --- */
 
 .card {
@@ -316,4 +319,13 @@ a.headline:hover { text-decoration: underline; }
   color: rgba(160, 210, 240, 0.4);
   font-family: -apple-system, "SF Pro Text", sans-serif;
   z-index: 3;
+  transition: color 0.3s ease;
+}
+
+.source.paused {
+  color: rgba(160, 210, 240, 0.85);
+}
+
+.source.paused::after {
+  content: " · paused";
 }

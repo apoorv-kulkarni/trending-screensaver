@@ -1,12 +1,12 @@
-const TRENDS_URL = "https://apoorvkulkarni.com/trending-screensaver/trends.json";
-const POLL_INTERVAL = 15 * 60 * 1000; // 15 min — GHA updates hourly, this catches it promptly
+const TRENDS_URL    = "https://apoorvkulkarni.com/trending-screensaver/trends.json";
+const POLL_INTERVAL = 15 * 60 * 1000;
 
-const caustics  = document.querySelector(".caustics");
-const focus     = document.getElementById("focus");
-const hero      = document.getElementById("hero");
-const card      = document.getElementById("card");
-const thumb     = document.getElementById("thumb");
-const headline  = document.getElementById("headline");
+const caustics   = document.querySelector(".caustics");
+const focus      = document.getElementById("focus");
+const hero       = document.getElementById("hero");
+const card       = document.getElementById("card");
+const thumb      = document.getElementById("thumb");
+const headline   = document.getElementById("headline");
 const newsSource = document.getElementById("newsSource");
 const trafficEl  = document.getElementById("traffic");
 const sourceEl   = document.getElementById("source");
@@ -19,12 +19,46 @@ const ghosts = [
 
 const DIRECTIONS = ["left", "right", "up", "down"];
 
-const wait  = (ms) => new Promise((r) => setTimeout(r, ms));
-const lower = (s)  => s.toLowerCase();
+const lower = (s) => s.toLowerCase();
 
 const formatFetched = (iso) =>
   new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
+const randBetween = (min, max) => min + Math.random() * (max - min);
+
+// --- pauseable wait ---
+let paused = false;
+
+const wait = (ms) => new Promise((resolve) => {
+  let remaining = ms;
+  let last = Date.now();
+  const tick = () => {
+    const now = Date.now();
+    if (!paused) remaining -= now - last;
+    last = now;
+    if (remaining <= 0) { resolve(); return; }
+    setTimeout(tick, Math.min(100, remaining));
+  };
+  setTimeout(tick, Math.min(100, ms));
+});
+
+const togglePause = () => {
+  paused = !paused;
+  sourceEl.classList.toggle("paused", paused);
+};
+
+// Spacebar or click anywhere (except links) toggles pause — web view only.
+const isScreensaver = window.location.protocol === "file:";
+if (!isScreensaver) {
+  document.addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePause(); }
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("a")) togglePause();
+  });
+}
+
+// --- traffic parsing ---
 const parseTraffic = (s) => {
   if (!s) return 0;
   const m = s.replace(/,/g, "").match(/([\d.]+)\s*([KMB]?)/i);
@@ -39,6 +73,13 @@ const holdTimes = (traffic) => {
   if (n >= 500_000)   return { hero: 4000, card: 4500 };
   if (n >= 100_000)   return { hero: 3000, card: 4000 };
   return                     { hero: 2500, card: 3000 };
+};
+
+// --- adaptive font size by title length ---
+const heroSizeClass = (title) => {
+  if (title.length > 35) return "size-sm";
+  if (title.length > 20) return "size-md";
+  return "";
 };
 
 const setThumb = (url) => {
@@ -58,10 +99,6 @@ const pulseCaustics = () => {
   caustics.addEventListener("animationend", () => caustics.classList.remove("pulse"), { once: true });
 };
 
-// Enable pointer events on the web view only (screensavers block interaction).
-const isScreensaver = window.location.protocol === "file:";
-if (!isScreensaver) focus.style.pointerEvents = "auto";
-
 // --- mutable state shared between the display loop and the poller ---
 let trends      = [];
 let ghostTitles = [];
@@ -69,7 +106,7 @@ let ghostNext   = ghosts.length;
 let trendIndex  = 0;
 let fetchedAt   = null;
 
-// Ghost listeners are set up once; they read from ghostTitles by reference.
+// Ghost listeners set up once; read ghostTitles by reference.
 ghosts.forEach((el, i) => {
   el.addEventListener("animationiteration", () => {
     if (!ghostTitles.length) return;
@@ -77,18 +114,15 @@ ghosts.forEach((el, i) => {
   });
 });
 
-const applyPayload = (payload, updateSource = true) => {
+const applyPayload = (payload) => {
   trends      = payload.trends;
   ghostTitles = payload.trends.map((t) => lower(t.title));
   fetchedAt   = payload.fetched_at;
-  if (updateSource) {
-    sourceEl.textContent = `Google Trends · ${payload.region} · ${formatFetched(payload.fetched_at)}`;
-  }
-  ghosts.forEach((el, i) => {
-    el.textContent = ghostTitles[i % ghostTitles.length];
-  });
-  ghostNext   = ghosts.length;
   trendIndex  = 0;
+  ghostNext   = ghosts.length;
+  sourceEl.textContent = `Google Trends · ${payload.region} · ${formatFetched(payload.fetched_at)}`;
+  if (paused) sourceEl.classList.add("paused");
+  ghosts.forEach((el, i) => { el.textContent = ghostTitles[i % ghostTitles.length]; });
 };
 
 const fetchPayload = async () => {
@@ -96,32 +130,42 @@ const fetchPayload = async () => {
   return res.json();
 };
 
-// Background poller — silently refreshes trends when GHA has new data.
 const startPoller = () => {
   setInterval(async () => {
     try {
       const payload = await fetchPayload();
       if (payload.fetched_at !== fetchedAt) applyPayload(payload);
-    } catch (e) { /* silent — never disrupt the display */ }
+    } catch (e) { /* silent */ }
   }, POLL_INTERVAL);
 };
 
 const showTrend = async (trend) => {
+  // Populate content.
   hero.textContent       = lower(trend.title);
   hero.href              = trend.link || "#";
+  hero.className         = "hero";
+  const sc = heroSizeClass(trend.title);
+  if (sc) hero.classList.add(sc);
+
   headline.textContent   = trend.headline || "";
   headline.href          = trend.url || trend.link || "#";
   newsSource.textContent = trend.source || "";
   trafficEl.textContent  = trend.traffic ? `${trend.traffic} searches` : "";
   setThumb(trend.picture);
 
+  // Instant card reset — no flash.
   focus.className = "focus resetting";
   void focus.offsetWidth;
   focus.className = "focus";
-  void focus.offsetWidth;
 
+  // Randomise anchor within a safe box around centre.
+  focus.style.top  = `${randBetween(38, 62)}%`;
+  focus.style.left = `${randBetween(38, 62)}%`;
+
+  void focus.offsetWidth;
   pulseCaustics();
 
+  // Enter: blur-in from depth.
   focus.classList.add("visible");
   await wait(1200);
 
