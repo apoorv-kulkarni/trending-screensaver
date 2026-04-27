@@ -10,7 +10,7 @@ Three pieces, one data source:
 
 1. **Fetcher** (`fetch_trends.py`) — pulls Google Trends daily RSS and writes `web/trends.json`.
 2. **GitHub Actions** (`.github/workflows/pages.yml`) — runs the fetcher hourly and deploys `web/` to GitHub Pages.
-3. **macOS screensaver** (`screensaver/`) — a `ScreenSaverView` hosting a `WKWebView` that loads `web/index.html` and fetches the live `trends.json` from the deployed site.
+3. **macOS screensaver** (`screensaver/`) — a fully native `ScreenSaverView` built with CoreAnimation layers. Fetches `trends.json` and thumbnails directly via URLSession; no browser engine required.
 
 The screensaver has no local cron — every time it activates, the web view pulls the latest data over HTTPS.
 

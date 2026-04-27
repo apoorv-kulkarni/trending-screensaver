@@ -47,16 +47,13 @@ const togglePause = () => {
   sourceEl.classList.toggle("paused", paused);
 };
 
-const isScreensaver = window.location.protocol === "file:";
-if (!isScreensaver) {
-  focus.style.pointerEvents = "auto";
-  document.addEventListener("keydown", (e) => {
-    if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePause(); }
-  });
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest("a")) togglePause();
-  });
-}
+focus.style.pointerEvents = "auto";
+document.addEventListener("keydown", (e) => {
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePause(); }
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("a")) togglePause();
+});
 
 // --- traffic parsing ---
 const parseTraffic = (s) => {
@@ -126,8 +123,14 @@ const applyPayload = (payload) => {
 };
 
 const fetchPayload = async () => {
-  const res = await fetch(`${TRENDS_URL}?t=${Date.now()}`);
-  return res.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
+  try {
+    const res = await fetch(`${TRENDS_URL}?t=${Date.now()}`, { signal: controller.signal });
+    return res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 const startPoller = () => {

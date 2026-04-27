@@ -4,7 +4,12 @@ Guidance for AI coding agents working in this repository.
 
 ## What this project is
 
-A macOS screensaver and live web page that display today's Google Trends as fish drifting through a deep-ocean scene. Each trend surfaces into focus (hero word → headline + thumbnail card → drifts away), while ghost words swim in the background at different depth layers. Data flows one way: Google Trends RSS → `fetch_trends.py` → `web/trends.json` → GitHub Pages → the screensaver's WKWebView.
+A macOS screensaver and live web page that display today's Google Trends as fish drifting through a deep-ocean scene. Each trend surfaces into focus (hero word → headline + thumbnail card → drifts away), while ghost words swim in the background at different depth layers.
+
+Data flows one way: Google Trends RSS → `fetch_trends.py` → `web/trends.json` → GitHub Pages.
+
+- **Web view** (`web/`) fetches `trends.json` from Pages and renders everything in HTML/CSS/JS.
+- **Screensaver** (`screensaver/`) is fully native — CoreAnimation layers for all visuals, URLSession for JSON and thumbnail fetches. No WKWebView.
 
 ## Repo layout
 
@@ -16,7 +21,7 @@ web/                              # static site deployed to GitHub Pages
   styles.css                      # all visual design
   trends.json                     # generated at deploy time, gitignored
 screensaver/
-  Sources/TrendsView.swift        # ScreenSaverView + WKWebView host
+  Sources/TrendsView.swift        # ScreenSaverView — native CA layers, URLSession
   Resources/Info.plist
   Makefile                        # build + install
 .github/workflows/
@@ -52,11 +57,11 @@ Requires macOS 11+ and the Swift toolchain (ships with Xcode or Command Line Too
 
 ## Key constraints
 
-- **No runtime dependencies.** `fetch_trends.py` uses only Python stdlib. `web/` is vanilla HTML/CSS/JS with no bundler. The screensaver uses only ScreenSaver, WebKit, and AppKit frameworks.
+- **No runtime dependencies.** `fetch_trends.py` uses only Python stdlib. `web/` is vanilla HTML/CSS/JS with no bundler. The screensaver uses only ScreenSaver and AppKit frameworks (no WebKit).
 - **`web/trends.json` is gitignored.** It is generated fresh on every GHA run and shipped via Pages artifact. Never commit it.
 - **Region is controlled by the `GEO` env var** (default `US`). Set it as a GitHub Actions variable in repo Settings → Secrets and variables → Actions → Variables, or override in `pages.yml`. Any Google Trends geo code works (e.g. `GB`, `AU`, `IN`, `JP`).
-- **The screensaver loads `app.js` from its bundle**, which fetches `trends.json` from `https://apoorvkulkarni.com/trending-screensaver/trends.json` — the live Pages URL. The screensaver requires network access at activation time.
-- **Screensaver links are intentionally disabled.** `app.js` detects `file://` protocol and disables pointer events; trend links only work in the browser web view.
+- **The screensaver is fully native.** `TrendsView.swift` fetches `trends.json` and thumbnail images directly via URLSession — no WKWebView, no cross-origin issues. It tries a bundled `trends.json` first (offline fallback), then fetches from Pages.
+- **The screensaver build is architecture-aware.** The Makefile detects `uname -m` and targets `arm64` on Apple Silicon or `x86_64` on Intel. Run `make install` on each machine; do not copy a pre-built binary between architectures.
 - **GHA uses GitHub Pages "GitHub Actions" source** (not "Deploy from branch"). Do not change `pages.yml` to commit `trends.json` back to the repo — that's intentional.
 
 ## What to check after changes
