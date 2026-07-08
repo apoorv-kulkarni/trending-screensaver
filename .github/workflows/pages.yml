@@ -15,6 +15,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -52,3 +53,23 @@ jobs:
 
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      # GitHub disables scheduled workflows after 60 days without repo commits.
+      # Re-enable via API when approaching that window (no empty commits needed).
+      - name: Keep scheduled workflow alive
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          default_branch=$(gh api "repos/${repo}" --jq '.default_branch')
+          last_commit_date=$(gh api "repos/${repo}/commits/${default_branch}" --jq '.commit.committer.date')
+          days_since=$(( ( $(date -u +%s) - $(date -u -d "$last_commit_date" +%s) ) / 86400 ))
+          echo "Days since last commit on ${default_branch}: ${days_since}"
+          if [ "$days_since" -lt 45 ]; then
+            echo "Repository is active; no keep-alive needed."
+            exit 0
+          fi
+          echo "Repository inactive for ${days_since} days; re-enabling scheduled workflow."
+          gh workflow enable pages.yml --repo "$repo"
